@@ -1,41 +1,47 @@
--- How many actors are there with the last name Wahlberg -- ANSWER 2
-
-SELECT first_name, last_name FROM actor WHERE last_name = 'Wahlberg';
-
--- How many payments were made between 3.99 and 5.99 -- ANSWER 5607
-
-SELECT COUNT(amount) FROM payment WHERE amount BETWEEN 3.99 AND 5.99;
-
--- what film does the store have the most of (search in inventory) -- ANSWER Film ID 1000 8 COPIES
---SELECT * FROM inventory
-SELECT film_id, COUNT(film_id) FROM inventory GROUP BY film_id ORDER BY film_id DESC; 
-
---how many customers have the last name William= ANSWER 0 for William but there is 1 WIlliams
-
-SELECT first_name, last_name FROM customer WHERE last_name ='William';
-
--- What store employee (get the id) sold the most rentals = ANSWER staff id 1 with 8040 rentals
---SELECT * FROM rental
-SELECT staff_id, COUNT(staff_id) FROM rental GROUP BY staff_id ORDER BY staff_id DESC;
+--question one-- 5 customers from Texas
+SELECT first_name, last_name, district
+FROM customer LEFT JOIN address ON customer.address_id = address.address_id WHERE district ='Texas';
 
 
---how many different district names are there ANSWER 603
---SELECT * FROM address
-SELECT COUNT(district) FROM address;
+--questions two-- 1406
+SELECT first_name, last_name, amount
+FROM customer LEFT JOIN payment ON customer.customer_id = payment.customer_id WHERE amount >6.99;
 
--- what film has the most actors in it (use film_actor table and get film_id) ANSWER 200 actors film_id 303
---SELECT * FROM film_actor
-SELECT MAX(actor_id) FROM film_actor GROUP BY film_id;
+--question three-- 6
+SELECT first_name, last_name, customer_id
+FROM customer WHERE customer_id IN (
+	SELECT customer_id FROM payment GROUP BY customer_id HAVING SUM(amount) >175 ORDER BY SUM(amount) DESC
+)
+GROUP BY first_name, last_name, customer_id;
 
---from store id 1 how many customers have a last name ending with es (use customer table)= ANSWER is 0
---SELECT * FROM customer
-SELECT COUNT(store_id) FROM customer WHERE last_name = '_%es';
+--questions 4-- 1
 
---how many payment amounts had a number of rentals over 250 for customers with ids between 380-430 use group by and having >250 = ANSWER 13339, 1257
---SELECT * FROM payment
-SELECT COUNT(amount) FROM payment WHERE rental_id >250 GROUP BY customer_id BETWEEN 380 AND 430;
+SELECT customer_id, first_name, last_name, city.country_id FROM customer
+FULL JOIN address ON customer.address_id = address.address_id
+FULL JOIN city ON address.city_id = city.city_id
+FULL JOIN country ON city.country_id = country.country_id WHERE country = 'Nepal';
 
 
--- Within the film table how many rating categories are there? and what rating has the most movies total ANSWER 5 categories and pg-13 has the most movies with 223
---SELECT * FROM film
-SELECT rating, COUNT(rating) FROM film GROUP BY rating;
+--question 5-- John had 7304
+SELECT first_name, last_name, staff.staff_id, COUNT(payment_id) FROM staff
+FULL JOIN payment ON staff.staff_id = payment.staff_id
+GROUP BY staff.staff_id ORDER BY staff.staff_id ASC;
+
+--question 6-- 5 ratings
+SELECT rating, COUNT(rating) FROM film GROUP BY rating
+
+--question 7-- uhhhhhhhh
+SELECT first_name, last_name FROM customer 
+FULL JOIN payment ON customer.customer_id = payment.customer_id
+WHERE customer.customer_id IN(
+	SELECT customer_id
+	FROM payment
+	WHERE amount > 6.99
+	GROUP BY customer_id
+	HAVING COUNT(amount) = 1
+)
+GROUP BY customer.customer_id, first_name, last_name ORDER BY customer.customer_id
+
+--question 8--24
+SELECT COUNT(amount) FROM payment WHERE amount = 0.00;
+
